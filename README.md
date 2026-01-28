@@ -11,33 +11,29 @@
 
 
 ##### 01-zookeeper.yaml #####
-명령어,목적
-kubectl apply -f 01-zookeeper.yaml,ZooKeeper 서비스 및 StatefulSet 생성
-kubectl get pods -n daa-stack -w,3개 파드가 모두 1/1 Running이 되는지 확인
-kubectl logs daa-zoo-0 -n daa-stack,로그 끝에 QuorumPeer가 보이면 정상
+kubectl apply -f 01-zookeeper.yaml > ZooKeeper 서비스 및 StatefulSet 생성
+kubectl get pods -n daa-stack -w > 3개 파드가 모두 1/1 Running이 되는지 확인
+kubectl logs daa-zoo-0 -n daa-stack > 로그 끝에 QuorumPeer가 보이면 정상
 
 
 
 ##### 02-kafka.yaml #####
-명령어,목적
-kubectl apply -f 02-kafka.yaml,Kafka 서비스 및 StatefulSet 생성
-kubectl logs daa-kafka-0 -n daa-stack,KafkaServer id=0 started 메시지 확인
-kubectl exec -it daa-kafka-0 -n daa-stack -- kafka-topics.sh --create --topic my-topic --bootstrap-server localhost:9092,테스트용 토픽 생성
+kubectl apply -f 02-kafka.yaml > Kafka 서비스 및 StatefulSet 생성
+kubectl logs daa-kafka-0 -n daa-stack > KafkaServer id=0 started 메시지 확인
+kubectl exec -it daa-kafka-0 -n daa-stack -- kafka-topics.sh --create --topic my-topic --bootstrap-server localhost:9092 > 테스트용 토픽 생성
 
 
 
 ##### 03-elk.yaml #####
-명령어,목적
-kubectl apply -f 03-elk.yaml,"ES, Kibana 배포 및 외부 서비스 노출"
-kubectl get svc -n daa-stack,"elasticsearch-lb, kibana-svc의 EXTERNAL-IP 확인"
-curl http://[ES-EXTERNAL-IP]:9200,"""You Know, for Search"" 응답 확인"
+kubectl apply -f 03-elk.yaml > "ES, Kibana 배포 및 외부 서비스 노출"
+kubectl get svc -n daa-stack > "elasticsearch-lb, kibana-svc의 EXTERNAL-IP 확인"
+curl http://[ES-EXTERNAL-IP]:9200 
 
 
 
 ##### 04-logstash.yaml #####
-명령어,목적
-kubectl apply -f 04-logstash.yaml,Logstash 설정 및 배포
-kubectl logs -f deployment/logstash -n daa-stack,Pipeline started 및 Successfully joined group 확인
+kubectl apply -f 04-logstash.yaml > Logstash 설정 및 배포
+kubectl logs -f deployment/logstash -n daa-stack > Pipeline started 및 Successfully joined group 확인
 
 
 
