@@ -44,7 +44,7 @@ kubectl logs -f deployment/logstash -n daa-stack,Pipeline started 및 Successful
 ##### 전체 동작 상태 검증 #####
 kubectl exec -it daa-kafka-0 -n daa-stack -- \
 kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092
-# 메시지 입력 예: {"msg": "hello cloud"}
+메시지 입력 예: {"msg": "hello cloud"}
 
 브라우저에서 http://[KIBANA-IP]:5601 접속.
 Index Pattern 생성: kafka-app-log-*
