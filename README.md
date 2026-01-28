@@ -1,6 +1,6 @@
 ##### 본 실습은 kubeadm 으로 k8s 1.29 가 구성되어 있는 환경에서 실습 진행함 #####
 1) run time : cri-dockerd
-2) master : 172.16.8.10, worker1~3 : 172.16.8.11~13 (NAT)
+2) master : 172.16.8.10, worker1,2,3 : 172.16.8.11, 172.16.8.12, 172.16.8.13 (NAT)
 3) metallb 구축되어 있음 > iprange : 172.16.8.201 ~ 172.16.8.239
 4) master 노드에 nfs 서버 구축되어 있으며 /k8s 디렉토리를 공유 디렉토리로 사용(777)
 - master : apt install -y nfs-server nfs-common
