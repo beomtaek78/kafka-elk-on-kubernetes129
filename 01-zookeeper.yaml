@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: daa-zoo-hs
+  namespace: daa-stack
+spec:
+  clusterIP: None
+  selector:
+    app: daa-zoo
+  ports:
+    - port: 2181
+      name: client
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: daa-zoo
+  namespace: daa-stack
+spec:
+  serviceName: "daa-zoo-hs"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: daa-zoo
+  template:
+    metadata:
+      labels:
+        app: daa-zoo
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: init-zookeeper
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          ID=$((${HOSTNAME##*-} + 1))
+          echo "$ID" > /data/myid
+          chown -R 1000:1000 /data
+        volumeMounts:
+        - name: zoo-data
+          mountPath: /data
+      containers:
+      - name: zookeeper
+        # 3.8.0의 Java 버그를 피하기 위해 3.9.2로 변경
+        image: zookeeper:3.9.2
+        env:
+        - name: ZOO_SERVERS
+          value: "server.1=daa-zoo-0.daa-zoo-hs:2888:3888;2181 server.2=daa-zoo-1.daa-zoo-hs:2888:3888;2181 server.3=daa-zoo-2.daa-zoo-hs:2888:3888;2181"
+        - name: JMXDISABLE
+          value: "true"
+        # Java의 Cgroup 메트릭 기능을 끄는 옵션 추가
+        - name: JVMFLAGS
+          value: "-Xmx512m -XX:-UseContainerSupport"
+        - name: ZOO_STANDALONE_ENABLED
+          value: "false"
+        volumeMounts:
+        - name: zoo-data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: zoo-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "nfs-sc"
+      resources:
+        requests:
+          storage: 1Gi

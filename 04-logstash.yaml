@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: daa-stack
+data:
+  logstash.conf: |
+    input {
+      kafka {
+        bootstrap_servers => "daa-kafka-0.daa-kafka-hs:19092,daa-kafka-1.daa-kafka-hs:19092"
+        topics => ["my-topic"]
+        group_id => "logstash-group"
+        codec => plain
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch-lb:9200"]
+        index => "kafka-app-log-%{+YYYY.MM.dd}"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: daa-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:7.10.2
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/pipeline/logstash.conf
+          subPath: logstash.conf
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-config
