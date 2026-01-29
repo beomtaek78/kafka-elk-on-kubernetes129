@@ -70,30 +70,30 @@ Discover 메뉴: 실시간으로 들어오는 로그 확인.
 
 #### 카프카와 KEDA 를 이용한 Lag 처리 ####
 ##### helm, keda 설치 #####
-snap install helm --classichelm repo add kedacore https://kedacore.github.io/charts
-helm repo add kedacore https://kedacore.github.io/charts
-helm repo update
-helm repo ls
-helm install keda kedacore/keda -n keda --create-namespace
-kubectl get po -n keda
-
+snap install helm --classichelm repo add kedacore https://kedacore.github.io/charts  
+helm repo add kedacore https://kedacore.github.io/charts  
+helm repo update  
+helm repo ls  
+helm install keda kedacore/keda -n keda --create-namespace  
+kubectl get po -n keda  
+  
 #####  logstash 구성(파드마다 고유한 client_id 를 갖도록 기존 파일에 환경변수[POD_NAME] 설정 추가 #####
-kubectl apply -f 04-logstash.yaml , 파드 이름을 환경 변수 POD_NAME 에 할당하도록 코드 수정
+kubectl apply -f 04-logstash.yaml , 파드 이름을 환경 변수 POD_NAME 에 할당하도록 코드 수정  
 
 ##### KEDA 구성을 위한 ScaledObject 생성 #####
 kafka 이 Lag이 10개가 되면 자동으로 logstash, elastichsearch 를 최대 각 3, 5개로 늘어나도록 설정
 
-kubectl apply -f 05-keda-scaler.yaml
-k get scaledobject -n daa-stack
+kubectl apply -f 05-keda-scaler.yaml  
+k get scaledobject -n daa-stack  
 ![alt text](image.png)
 
 ##### 테스트 진행 #####
-Kafka에서 Lag은 **"생성된 메시지 양(Log End Offset)과 처리된 메시지 양(Current Offset) 사이의 차이"**를 의미
-Log End Offset (LEO): 프로듀서가 토픽에 넣은 마지막 메시지의 번호
+Kafka에서 Lag은 **"생성된 메시지 양(Log End Offset)과 처리된 메시지 양(Current Offset) 사이의 차이"**를 의미  
+Log End Offset (LEO): 프로듀서가 토픽에 넣은 마지막 메시지의 번호  
 
-Current Offset: 컨슈머(여기서는 Logstash)가 마지막으로 읽어서 처리를 완료한 메시지의 번호
+Current Offset: 컨슈머(여기서는 Logstash)가 마지막으로 읽어서 처리를 완료한 메시지의 번호  
 
-Lag: LEO - Current Offset = 아직 처리되지 않고 큐에 쌓여 있는 메시지의 개수
+Lag: LEO - Current Offset = 아직 처리되지 않고 큐에 쌓여 있는 메시지의 개수  
 
 root@daa-kafka-0:/# # 컨슈머 그룹 상태 및 Lag 확인
 kafka-consumer-groups.sh --bootstrap-server localhost:19092 --group logstash-group --describe
@@ -101,12 +101,12 @@ kafka-consumer-groups.sh --bootstrap-server localhost:19092 --group logstash-gro
 
 내부적으로 메시지를 발생 시키더라도 서버의 성능이 나쁘지 않다면 LAG 이 발생되지 않을 수 있다.
 
-따라서 본 실습에서는 logstash 의 개수를 조정하기 위해 
-1) 04-logstash.yaml 파일에서 deployment 의 replicas 를 먼저 0 으로 조정하고 apply 한다.
-2) kubectl get pods -n daa-stack -w 으로 실시간으로 logstash, elasticsearch 의 개수를 확인한다
-3) 새로운 터미널을 열고  
+따라서 본 실습에서는 logstash 의 개수를 조정하기 위해   
+1) 04-logstash.yaml 파일에서 deployment 의 replicas 를 먼저 0 으로 조정하고 apply 한다.  
+2) kubectl get pods -n daa-stack -w 으로 실시간으로 logstash, elasticsearch 의 개수를 확인한다  
+3) 새로운 터미널을 열고    
 
 
-root@master:~/testlab/kafka-elk-on-kubernetes129# kubectl exec -it daa-kafka-0 -n daa-stack -- /bin/bash    # 컨테이너로 들어간다
-root@daa-kafka-0:/# for i in {1..100}; do   echo "log-message-$i" | kafka-console-producer.sh   --bootstrap-server daa-kafka-0.daa-kafka-hs:19092   --topic my-topic; done   # 메시지를 발생 시킨다.
+root@master:~/testlab/kafka-elk-on-kubernetes129# kubectl exec -it daa-kafka-0 -n daa-stack -- /bin/bash    # 컨테이너로 들어간다  
+root@daa-kafka-0:/# for i in {1..100}; do   echo "log-message-$i" | kafka-console-producer.sh   --bootstrap-server daa-kafka-0.daa-kafka-hs:19092   --topic my-topic; done   # 메시지를 발생 시킨다.  
 ![alt text](image-1.png)
