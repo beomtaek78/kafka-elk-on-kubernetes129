@@ -1,7 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: elasticsearch-lb
+  #name: elasticsearch-lb
+  name: elasticsearch
   namespace: daa-stack
 spec:
   type: LoadBalancer
@@ -103,6 +104,6 @@ spec:
         env:
         - name: ELASTICSEARCH_HOSTS
           # 내부 서비스 이름을 사용하여 연결
-          value: "http://elasticsearch-lb:9200"
+          value: "http://elasticsearch:9200"
         ports:
         - containerPort: 5601

@@ -1,0 +1,11 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-sc
+mountOptions:
+  - nfsvers=4.2
+parameters:
+  server: 172.16.8.10  # nfs 서버의 IP
+  share: /k8s        # nfs-sc 를 사용하는 팀은 /k8s 에 데이터 기록
+provisioner: nfs.csi.k8s.io
+reclaimPolicy: Delete   # pod 삭제시 함께 삭제됨

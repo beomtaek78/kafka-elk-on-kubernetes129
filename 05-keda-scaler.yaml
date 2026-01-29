@@ -1,0 +1,41 @@
+# Logstash용 Scaler (최대 3개)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: logstash-scaler
+  namespace: daa-stack
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: logstash
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: daa-kafka-0.daa-kafka-hs.daa-stack.svc.cluster.local:19092,daa-kafka-1.daa-kafka-hs.daa-stack.svc.cluster.local:19092
+      consumerGroup: logstash-group
+      topic: my-topic
+      lagThreshold: '10'
+
+---
+
+# Elasticsearch용 Scaler (최대 5개)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: elasticsearch-scaler
+  namespace: daa-stack
+spec:
+  scaleTargetRef:
+    kind: StatefulSet
+    name: elasticsearch
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: daa-kafka-0.daa-kafka-hs.daa-stack.svc.cluster.local:19092,daa-kafka-1.daa-kafka-hs.daa-stack.svc.cluster.local:19092
+      consumerGroup: logstash-group
+      topic: my-topic
+      lagThreshold: '10'

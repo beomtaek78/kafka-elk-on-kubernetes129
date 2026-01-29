@@ -10,12 +10,14 @@ data:
         bootstrap_servers => "daa-kafka-0.daa-kafka-hs:19092,daa-kafka-1.daa-kafka-hs:19092"
         topics => ["my-topic"]
         group_id => "logstash-group"
+        # 환경 변수를 통해 파드 이름을 client_id로 사용 (중복 방지)
+        client_id => "${POD_NAME}"
         codec => plain
       }
     }
     output {
       elasticsearch {
-        hosts => ["http://elasticsearch-lb:9200"]
+        hosts => ["http://elasticsearch:9200"]
         index => "kafka-app-log-%{+YYYY.MM.dd}"
       }
     }
@@ -38,6 +40,12 @@ spec:
       containers:
       - name: logstash
         image: docker.elastic.co/logstash/logstash:7.10.2
+        # 중요: 파드 이름을 환경 변수 POD_NAME에 할당
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         volumeMounts:
         - name: config-volume
           mountPath: /usr/share/logstash/pipeline/logstash.conf
